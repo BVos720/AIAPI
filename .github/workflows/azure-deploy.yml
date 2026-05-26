@@ -1,0 +1,47 @@
+name: Build & Deploy naar Azure App Service
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  PROJECT_PATH: 'AIAPI/AIAPI.csproj'
+  PUBLISH_DIR: './publish'
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout de code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Installeer .NET 10
+      - name: Installeer .NET ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # 3. Herstel NuGet packages
+      - name: Herstel dependencies
+        run: dotnet restore ${{ env.PROJECT_PATH }}
+
+      # 4. Bouw het project (Release mode)
+      - name: Build
+        run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
+
+      # 5. Publiceer het project
+      - name: Publish
+        run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --no-build --output ${{ env.PUBLISH_DIR }}
+
+      # 6. Deploy naar Azure App Service
+      - name: Deploy naar Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_APP_NAME }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          package: ${{ env.PUBLISH_DIR }}
