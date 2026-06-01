@@ -5,7 +5,8 @@ public class Afval
     public Guid GUID { get; set; }
     public string Label { get; set; }
     public float Confidence { get; set; }
-    public double LocatieCoördinaten { get; set; }
+    public double LocatieX { get; set; }
+    public double LocatieY {  get; set; }
     public string LocatieAdres {  get; set; }
     public DateTime Tijd {  get; set; }
     public int CameraID { get; set; }
