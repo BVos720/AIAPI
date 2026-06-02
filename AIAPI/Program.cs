@@ -20,6 +20,13 @@ builder.Services.AddHttpClient<IMonitoringService, MonitoringService>();
 
 var app = builder.Build();
 
+// Automatisch migrations uitvoeren bij opstarten
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<SensoringDbContext>();
+    db.Database.Migrate();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
