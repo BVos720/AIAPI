@@ -17,6 +17,7 @@ builder.Services.AddDbContext<SensoringDbContext>(options =>
 
 builder.Services.AddScoped<IDetectionRepository, DetectionRepository>();
 builder.Services.AddHttpClient<IMonitoringService, MonitoringService>();
+builder.Services.AddHttpClient<IGeocodingService, GeocodingService>();
 
 var app = builder.Build();
 

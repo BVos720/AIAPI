@@ -2,14 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using AIAPI.Filters;
 using AIAPI.Interfaces;
 using AIAPI.Models;
+using AIAPI.Services;
 
 namespace AIAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class DetectionController(IDetectionRepository repository) : ControllerBase
+public class DetectionController(IDetectionRepository repository, IGeocodingService geocoding) : ControllerBase
 {
     private readonly IDetectionRepository _repository = repository;
+    private readonly IGeocodingService _geocoding = geocoding;
 
     // ─── GET: Alle detecties ophalen (beveiligd met API key) ───────────
     [HttpGet]
@@ -28,6 +30,10 @@ public class DetectionController(IDetectionRepository repository) : ControllerBa
             return BadRequest("Geen data ontvangen.");
 
         detection.Timestamp = DateTime.UtcNow;
+
+        if (detection.LocatieX.HasValue && detection.LocatieY.HasValue)
+            detection.Location = await _geocoding.GetAddressAsync(detection.LocatieX.Value, detection.LocatieY.Value);
+
         await _repository.InsertAsync(detection);
 
         return Ok(detection);
