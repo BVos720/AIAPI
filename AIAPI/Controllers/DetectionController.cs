@@ -24,6 +24,7 @@ public class DetectionController(IDetectionRepository repository, IGeocodingServ
 
     // ─── POST: AI model post zijn detecties (camera/ESP32) ─────────────
     [HttpPost("ai")]
+    [ApiKey]
     public async Task<ActionResult<Detection>> PostFromAI([FromBody] Detection detection)
     {
         if (detection == null)
