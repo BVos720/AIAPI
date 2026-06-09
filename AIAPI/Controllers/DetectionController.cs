@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using AIAPI.Filters;
 using AIAPI.Interfaces;
 using AIAPI.Models;
 
@@ -10,8 +11,9 @@ public class DetectionController(IDetectionRepository repository) : ControllerBa
 {
     private readonly IDetectionRepository _repository = repository;
 
-    // ─── GET: Alle detecties ophalen (voor de frontend) ────────────────
+    // ─── GET: Alle detecties ophalen (beveiligd met API key) ───────────
     [HttpGet]
+    [ApiKey]
     public async Task<ActionResult<List<Detection>>> GetAll()
     {
         var detections = await _repository.GetAllAsync();
