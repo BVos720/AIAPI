@@ -26,7 +26,7 @@ public class Detection
     [Required]
     public string CameraId { get; set; } = string.Empty;
 
-    public string? ImagePath { get; set; }
+    public string? ImageId { get; set; }
 
     // Bounding box
     public float? BoundingBoxLB { get; set; }

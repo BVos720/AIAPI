@@ -65,7 +65,7 @@ public class DetectionController(IDetectionRepository repository, IGeocodingServ
             Timestamp = DateTime.UtcNow,
             Location = location,
             CameraId = cameraId,
-            ImagePath = filePath
+            ImageId = filePath
         };
 
         await _repository.InsertAsync(detection);
