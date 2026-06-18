@@ -4,6 +4,7 @@ using AIAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AIAPI.Migrations
 {
     [DbContext(typeof(SensoringDbContext))]
-    partial class SensoringDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260616105011_AddTrainingImages")]
+    partial class AddTrainingImages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,40 +24,6 @@ namespace AIAPI.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("AIAPI.Models.BoundingBox", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<float>("CenterX")
-                        .HasColumnType("real");
-
-                    b.Property<float>("CenterY")
-                        .HasColumnType("real");
-
-                    b.Property<float>("Height")
-                        .HasColumnType("real");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("TrainingImageId")
-                        .HasColumnType("int");
-
-                    b.Property<float>("Width")
-                        .HasColumnType("real");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TrainingImageId");
-
-                    b.ToTable("BoundingBoxes");
-                });
 
             modelBuilder.Entity("AIAPI.Models.Detection", b =>
                 {
@@ -130,22 +99,6 @@ namespace AIAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TrainingImages");
-                });
-
-            modelBuilder.Entity("AIAPI.Models.BoundingBox", b =>
-                {
-                    b.HasOne("AIAPI.Models.TrainingImage", "TrainingImage")
-                        .WithMany("BoundingBoxes")
-                        .HasForeignKey("TrainingImageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TrainingImage");
-                });
-
-            modelBuilder.Entity("AIAPI.Models.TrainingImage", b =>
-                {
-                    b.Navigation("BoundingBoxes");
                 });
 #pragma warning restore 612, 618
         }
