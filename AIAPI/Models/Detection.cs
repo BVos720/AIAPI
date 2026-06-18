@@ -32,4 +32,12 @@ public class Detection
     public float? BoundingBoxLB { get; set; }
     public float? BoundingBoxRB { get; set; }
     public float? BoundingBoxCenter { get; set; }
+
+    // Optionele afbeelding (base64) die meegestuurd kan worden bij een POST.
+    // Wordt NIET in de Detections-tabel opgeslagen, maar in DetectionImages.
+    [NotMapped]
+    public string? ImageBase64 { get; set; }
+
+    [NotMapped]
+    public string? ImageContentType { get; set; }
 }

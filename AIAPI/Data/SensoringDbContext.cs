@@ -8,4 +8,5 @@ public class SensoringDbContext(DbContextOptions<SensoringDbContext> options) : 
     public DbSet<Detection> Detections { get; set; }
     public DbSet<TrainingImage> TrainingImages { get; set; }
     public DbSet<BoundingBox> BoundingBoxes { get; set; }
+    public DbSet<DetectionImage> DetectionImages { get; set; }
 }

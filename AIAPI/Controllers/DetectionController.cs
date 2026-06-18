@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using AIAPI.Data;
 using AIAPI.Filters;
 using AIAPI.Interfaces;
 using AIAPI.Models;
@@ -8,10 +10,11 @@ namespace AIAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class DetectionController(IDetectionRepository repository, IGeocodingService geocoding) : ControllerBase
+public class DetectionController(IDetectionRepository repository, IGeocodingService geocoding, SensoringDbContext db) : ControllerBase
 {
     private readonly IDetectionRepository _repository = repository;
     private readonly IGeocodingService _geocoding = geocoding;
+    private readonly SensoringDbContext _db = db;
 
     // ─── GET: Alle detecties ophalen (monitoring key) ─────────────────
     [HttpGet]
@@ -37,7 +40,40 @@ public class DetectionController(IDetectionRepository repository, IGeocodingServ
 
         await _repository.InsertAsync(detection);
 
+        // Optioneel: afbeelding meegestuurd? Sla die op in de aparte DetectionImages-tabel.
+        if (!string.IsNullOrWhiteSpace(detection.ImageBase64))
+        {
+            try
+            {
+                var data = Convert.FromBase64String(detection.ImageBase64);
+                _db.DetectionImages.Add(new DetectionImage
+                {
+                    DetectionId = detection.Id,
+                    ContentType = string.IsNullOrWhiteSpace(detection.ImageContentType) ? "image/jpeg" : detection.ImageContentType,
+                    Data = data,
+                    CreatedAt = DateTime.UtcNow
+                });
+                await _db.SaveChangesAsync();
+            }
+            catch (FormatException)
+            {
+                return BadRequest("ImageBase64 is geen geldige base64-string.");
+            }
+        }
+
         return Ok(detection);
+    }
+
+    // ─── GET: Afbeelding van een detectie ophalen ──────────────────────
+    [HttpGet("{id}/image")]
+    [ApiKey("ApiKeys:Monitoring")]
+    public async Task<ActionResult> GetImage(int id)
+    {
+        var image = await _db.DetectionImages.FirstOrDefaultAsync(i => i.DetectionId == id);
+        if (image == null)
+            return NotFound();
+
+        return File(image.Data, image.ContentType);
     }
 
     // ─── POST: Frontend upload een afbeelding ──────────────────────────
