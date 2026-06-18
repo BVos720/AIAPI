@@ -86,7 +86,9 @@ public class TrainingImageController(SensoringDbContext db) : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(boundingBoxes))
         {
-            var boxes = JsonSerializer.Deserialize<List<BoundingBoxDto>>(boundingBoxes);
+            var boxes = JsonSerializer.Deserialize<List<BoundingBoxDto>>(
+                boundingBoxes,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (boxes != null)
             {
                 trainingImage.BoundingBoxes = boxes.Select(b => new BoundingBox
