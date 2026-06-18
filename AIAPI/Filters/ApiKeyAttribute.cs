@@ -4,14 +4,15 @@ using Microsoft.AspNetCore.Mvc.Filters;
 namespace AIAPI.Filters;
 
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
-public class ApiKeyAttribute : Attribute, IAsyncActionFilter
+public class ApiKeyAttribute(string configKey = "ApiKeys:Monitoring") : Attribute, IAsyncActionFilter
 {
     private const string ApiKeyHeader = "X-Api-Key";
+    private readonly string _configKey = configKey;
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         var config = context.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
-        var expectedKey = config["ApiKey"];
+        var expectedKey = config[_configKey];
 
         if (string.IsNullOrEmpty(expectedKey))
         {

@@ -13,9 +13,9 @@ public class DetectionController(IDetectionRepository repository, IGeocodingServ
     private readonly IDetectionRepository _repository = repository;
     private readonly IGeocodingService _geocoding = geocoding;
 
-    // ─── GET: Alle detecties ophalen (beveiligd met API key) ───────────
+    // ─── GET: Alle detecties ophalen (monitoring key) ─────────────────
     [HttpGet]
-    [ApiKey]
+    [ApiKey("ApiKeys:Monitoring")]
     public async Task<ActionResult<List<Detection>>> GetAll()
     {
         var detections = await _repository.GetAllAsync();
@@ -24,7 +24,7 @@ public class DetectionController(IDetectionRepository repository, IGeocodingServ
 
     // ─── POST: AI model post zijn detecties (camera/ESP32) ─────────────
     [HttpPost("ai")]
-    [ApiKey]
+    [ApiKey("ApiKeys:Training")]
     public async Task<ActionResult<Detection>> PostFromAI([FromBody] Detection detection)
     {
         if (detection == null)

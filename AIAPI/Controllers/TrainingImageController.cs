@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using AIAPI.Data;
+using AIAPI.Filters;
 using AIAPI.Models;
 
 namespace AIAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[ApiKey("ApiKeys:Training")]
 public class TrainingImageController(SensoringDbContext db) : ControllerBase
 {
     private readonly SensoringDbContext _db = db;
@@ -59,6 +61,17 @@ public class TrainingImageController(SensoringDbContext db) : ControllerBase
     {
         if (image == null || image.Length == 0)
             return BadRequest("Geen afbeelding ontvangen.");
+
+        const long maxBytes = 15 * 1024 * 1024;
+        if (image.Length > maxBytes)
+            return BadRequest("Afbeelding is te groot. Maximum is 15 MB.");
+
+        var toegestaneTypes = new[] { "image/jpeg", "image/png", "image/heic", "image/heif" };
+        var toegestaneExts  = new[] { ".jpg", ".jpeg", ".png", ".heic", ".heif" };
+        var ext = Path.GetExtension(image.FileName).ToLowerInvariant();
+
+        if (!toegestaneTypes.Contains(image.ContentType.ToLowerInvariant()) || !toegestaneExts.Contains(ext))
+            return BadRequest("Alleen JPG, PNG en HEIC bestanden zijn toegestaan.");
 
         using var ms = new MemoryStream();
         await image.CopyToAsync(ms);
