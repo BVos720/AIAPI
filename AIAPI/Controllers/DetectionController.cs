@@ -75,37 +75,4 @@ public class DetectionController(IDetectionRepository repository, IGeocodingServ
 
         return File(image.Data, image.ContentType);
     }
-
-    // ─── POST: Frontend upload een afbeelding ──────────────────────────
-    [HttpPost("upload")]
-    [Consumes("multipart/form-data")]
-    public async Task<ActionResult> Upload([FromForm] IFormFile image, [FromForm] string cameraId, [FromForm] string? location)
-    {
-        if (image == null || image.Length == 0)
-            return BadRequest("Geen afbeelding ontvangen.");
-
-        var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "uploads");
-        Directory.CreateDirectory(uploadsDir);
-
-        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(image.FileName)}";
-        var filePath = Path.Combine(uploadsDir, fileName);
-
-        await using var stream = new FileStream(filePath, FileMode.Create);
-        await image.CopyToAsync(stream);
-
-        // TODO: AI verwerking toevoegen als het model beschikbaar is
-        var detection = new Detection
-        {
-            Label = "pending",
-            Confidence = 0,
-            Timestamp = DateTime.UtcNow,
-            Location = location,
-            CameraId = cameraId,
-            ImageId = filePath
-        };
-
-        await _repository.InsertAsync(detection);
-
-        return Ok(detection);
-    }
 }
