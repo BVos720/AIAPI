@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using AIAPI.Data;
@@ -54,6 +55,7 @@ public class TrainingImageController(SensoringDbContext db) : ControllerBase
 
     // ─── POST: Upload een training afbeelding met bounding boxes ───────
     [HttpPost("upload")]
+    [EnableRateLimiting("upload")]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult> Upload(
         [FromForm] IFormFile image,
