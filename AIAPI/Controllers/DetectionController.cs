@@ -39,7 +39,7 @@ public class DetectionController(IDetectionRepository repository, IGeocodingServ
             detection.Location = await _geocoding.GetAddressAsync(detection.LocatieX.Value, detection.LocatieY.Value);
 
         await _repository.InsertAsync(detection);
-
+        //
         // Optioneel: afbeelding meegestuurd? Sla die op in de aparte DetectionImages-tabel.
         if (!string.IsNullOrWhiteSpace(detection.ImageBase64))
         {
