@@ -5,6 +5,7 @@ using System.Text.Json;
 using AIAPI.Data;
 using AIAPI.Filters;
 using AIAPI.Models;
+using AIAPI.Validation;
 
 namespace AIAPI.Controllers;
 
@@ -61,19 +62,12 @@ public class TrainingImageController(SensoringDbContext db) : ControllerBase
         [FromForm] IFormFile image,
         [FromForm] string? boundingBoxes)
     {
-        if (image == null || image.Length == 0)
+        if (image == null)
             return BadRequest("Geen afbeelding ontvangen.");
 
-        const long maxBytes = 15 * 1024 * 1024;
-        if (image.Length > maxBytes)
-            return BadRequest("Afbeelding is te groot. Maximum is 15 MB.");
-
-        var toegestaneTypes = new[] { "image/jpeg", "image/png", "image/heic", "image/heif" };
-        var toegestaneExts  = new[] { ".jpg", ".jpeg", ".png", ".heic", ".heif" };
-        var ext = Path.GetExtension(image.FileName).ToLowerInvariant();
-
-        if (!toegestaneTypes.Contains(image.ContentType.ToLowerInvariant()) || !toegestaneExts.Contains(ext))
-            return BadRequest("Alleen JPG, PNG en HEIC bestanden zijn toegestaan.");
+        var (geldig, fout) = ImageValidator.Valideer(image.ContentType, image.FileName, image.Length);
+        if (!geldig)
+            return BadRequest(fout);
 
         using var ms = new MemoryStream();
         await image.CopyToAsync(ms);

@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="AIAPI/AIAPI.csproj" />
+  <Project Path="AIAPI.Tests/AIAPI.Tests.csproj" />
 </Solution>

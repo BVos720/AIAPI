@@ -1,4 +1,4 @@
-name: Build & Deploy naar Azure App Service
+name: Build, Test & Deploy naar Azure App Service
 
 on:
   push:
@@ -8,11 +8,12 @@ on:
 env:
   DOTNET_VERSION: '10.0.x'
   PROJECT_PATH: 'AIAPI/AIAPI.csproj'
+  TEST_PATH: 'AIAPI.Tests/AIAPI.Tests.csproj'
   PUBLISH_DIR: './publish'
 
 jobs:
   build-and-deploy:
-    name: Build & Deploy
+    name: Build, Test & Deploy
     runs-on: ubuntu-latest
 
     steps:
@@ -34,14 +35,42 @@ jobs:
       - name: Build
         run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
 
-      # 5. Publiceer het project
-      - name: Publish
-        run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --no-build --output ${{ env.PUBLISH_DIR }}
+      # 5. Voer de unit tests uit (deploy stopt als een test faalt)
+      - name: Unit tests
+        run: dotnet test ${{ env.TEST_PATH }} --configuration Release --verbosity normal
 
-      # 6. Deploy naar Azure App Service
+      # 6. Publiceer het project
+      - name: Publish
+        run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --output ${{ env.PUBLISH_DIR }}
+
+      # 7. Deploy naar Azure App Service
       - name: Deploy naar Azure App Service
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.AZURE_APP_NAME }}
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
           package: ${{ env.PUBLISH_DIR }}
+
+  system-tests:
+    name: Newman systeemtests
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Installeer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Installeer Newman
+        run: npm install -g newman
+
+      - name: Voer Postman-systeemtests uit
+        run: |
+          newman run postman/AIAPI.postman_collection.json \
+            --env-var "baseUrl=${{ secrets.AIAPI_BASE_URL }}" \
+            --env-var "monitoringKey=${{ secrets.AIAPI_MONITORING_KEY }}" \
+            --env-var "trainingKey=${{ secrets.AIAPI_TRAINING_KEY }}"
