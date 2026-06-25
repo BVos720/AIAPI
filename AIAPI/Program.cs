@@ -39,11 +39,20 @@ builder.Services.AddHttpClient<IGeocodingService, GeocodingService>();
 
 var app = builder.Build();
 
-// Automatisch migrations uitvoeren bij opstarten
+// Automatisch migrations uitvoeren bij opstarten.
+// In een try/catch zodat een tijdelijk onbereikbare database bij een cold start
+// de app niet platlegt (anders krijg je een HTTP 500.30).
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<SensoringDbContext>();
-    db.Database.Migrate();
+    try
+    {
+        db.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Database-migratie bij opstarten mislukt - app start toch op.");
+    }
 }
 
 app.MapOpenApi();
