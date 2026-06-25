@@ -31,7 +31,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<SensoringDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString, sql => sql.EnableRetryOnFailure()));
 
 builder.Services.AddScoped<IDetectionRepository, DetectionRepository>();
 builder.Services.AddHttpClient<IMonitoringService, MonitoringService>();
