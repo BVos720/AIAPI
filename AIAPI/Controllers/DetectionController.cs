@@ -36,7 +36,18 @@ public class DetectionController(IDetectionRepository repository, IGeocodingServ
         detection.Timestamp = DateTime.UtcNow;
 
         if (detection.LocatieX.HasValue && detection.LocatieY.HasValue)
+        {
             detection.Location = await _geocoding.GetAddressAsync(detection.LocatieX.Value, detection.LocatieY.Value);
+            //
+            // Externe geocoding-API niet beschikbaar of geen adres gevonden:
+            // adres blijft leeg en confidence op 0, zodat de detectie makkelijk
+            // uit de database te filteren is.
+            if (string.IsNullOrEmpty(detection.Location))
+            {
+                detection.Location = null;
+                detection.Confidence = 0;
+            }
+        }
 
         await _repository.InsertAsync(detection);
         //
